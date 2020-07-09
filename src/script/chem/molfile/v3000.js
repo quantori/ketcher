@@ -17,7 +17,7 @@
 import Vec2 from '../../util/vec2';
 
 import element from './../element';
-import Struct, { Atom, AtomList, Bond, RGroup, SGroup } from './../struct/index';
+import Struct, { Atom, AtomList, Bond, Collection, RGroup, SGroup } from './../struct/index';
 
 import sGroup from './parseSGroup';
 import utils from './utils';
@@ -108,16 +108,28 @@ function parseBondLineV3000(line) {
 	return new Bond(params);
 }
 
-function v3000parseCollection(ctab, ctabLines, shift) {
+function parseCollectionV3000(ctab, ctabLines, shift) {
 	/* reader */
 	shift++;
-	while (ctabLines[shift].trim() != 'M  V30 END COLLECTION')
-		shift++;
-	shift++;
+
+	while (shift < ctabLines.length) {
+		var line = stripV30(ctabLines[shift++]).trim();
+		if (line == 'END COLLECTION') {
+			break;
+		}
+		var split = spaceparsplit(line);
+		var params = {
+			name: split[0].split('/')[0],
+			subname: split[0].split('/')[1],
+			atoms: split[1].slice(7, split[1].length - 1).split(' ').slice(1),
+		}
+		ctab.collections.add(new Collection(params));
+	}
+
 	return shift;
 }
 
-function v3000parseSGroup(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-disable-line max-params, max-statements
+function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-disable-line max-params, max-statements
 	/* reader */
 	var line = '';
 	shift++;
@@ -218,10 +230,9 @@ function parseCTabV3000(ctabLines, norgroups) { // eslint-disable-line max-state
 
 		while (ctabLines[shift].trim() != 'M  V30 END CTAB') {
 			if (ctabLines[shift].trim() == 'M  V30 BEGIN COLLECTION')
-			// TODO: read collection information
-				shift = v3000parseCollection(ctab, ctabLines, shift);
+				shift = parseCollectionV3000(ctab, ctabLines, shift);
 			else if (ctabLines[shift].trim() == 'M  V30 BEGIN SGROUP')
-				shift = v3000parseSGroup(ctab, ctabLines, sgroups, atomMap, shift);
+				shift = parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift);
 			else
 				throw Error('CTAB V3000 invalid');
 		}

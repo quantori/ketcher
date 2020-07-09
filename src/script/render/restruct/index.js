@@ -51,6 +51,7 @@ function ReStruct(molecule, render) { // eslint-disable-line max-statements
 	this.render = render;
 	this.atoms = new Pool();
 	this.bonds = new Pool();
+	this.collections = new Pool();
 	this.reloops = new Pool();
 	this.rxnPluses = new Pool();
 	this.rxnArrows = new Pool();
@@ -76,6 +77,8 @@ function ReStruct(molecule, render) { // eslint-disable-line max-statements
 	molecule.atoms.forEach((atom, aid) => { this.atoms.set(aid, new ReAtom(atom)); });
 
 	molecule.bonds.forEach((bond, bid) => { this.bonds.set(bid, new ReBond(bond)); });
+
+	molecule.collections.forEach((collection) => { this.collections.add(collection); });
 
 	molecule.loops.forEach((loop, lid) => { this.reloops.set(lid, new ReLoop(loop)); });
 
@@ -602,6 +605,10 @@ ReStruct.maps = {
 	sgroups: ReSGroup,
 	reloops: ReLoop
 };
+
+ReStruct.prototype.getCollectionByAtom = function (aid) {
+	return this.collections.get(this.collections.find((cid, col) => (col.atoms.includes((aid + 1).toString()))));
+}
 
 export default ReStruct;
 export {

@@ -24,6 +24,7 @@ import element from '../element';
 import Atom, { radicalElectrons } from './atom';
 import AtomList from './atomlist';
 import Bond from './bond';
+import Collection from './collection'
 import SGroup from './sgroup';
 import RGroup from './rgroup';
 import SGroupForest from './sgforest';
@@ -40,6 +41,7 @@ function Struct() {
 	this.rxnPluses = new Pool();
 	this.frags = new Pool();
 	this.rgroups = new Pool();
+	this.collections = new Pool();
 	this.name = '';
 	this.sGroupForest = new SGroupForest(this);
 }
@@ -1023,5 +1025,6 @@ export {
 	SGroup,
 	RGroup,
 	RxnPlus,
-	RxnArrow
+	RxnArrow,
+	Collection,
 };

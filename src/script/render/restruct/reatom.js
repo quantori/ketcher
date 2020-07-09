@@ -73,8 +73,9 @@ ReAtom.prototype.show = function (restruct, aid, options) { // eslint-disable-li
 
 	this.hydrogenOnTheLeft = setHydrogenPos(restruct.molecule, this);
 	this.showLabel = isLabelVisible(restruct, render.options, this);
+	var relatedCollection = restruct.getCollectionByAtom(aid);
 	this.color = 'black'; // reset colour
-	if (this.showLabel) {
+	if (this.showLabel || relatedCollection) {
 		var label = buildLabel(this, render.paper, ps, options);
 		var delta = 0.5 * options.lineWidth;
 		var rightMargin = label.rbb.width / 2;
@@ -155,6 +156,14 @@ ReAtom.prototype.show = function (restruct, aid, options) { // eslint-disable-li
 				0.3 * label.rbb.height);
 			/* eslint-enable no-mixed-operators */
 		}
+	}
+
+	if (relatedCollection) {
+		var collection = showCollection(this, render, relatedCollection, {
+			rightMargin,
+			leftMargin
+		});
+		restruct.addReObjectPath('data', this.visel, collection.path, ps, true);
 	}
 
 	if (this.a.attpnt) {
@@ -270,15 +279,20 @@ function setHydrogenPos(struct, atom) {
 
 function buildLabel(atom, paper, ps, options) { // eslint-disable-line max-statements
 	let label = {};
-	label.text = getLabelText(atom.a);
+	if (atom.showLabel) {
+		label.text = getLabelText(atom.a);
 
-	if (label.text === '')
-		label = 'R#'; // for structures that missed 'M  RGP' tag in molfile
+		if (label.text === '')
+			label = 'R#'; // for structures that missed 'M  RGP' tag in molfile
 
-	if (label.text === atom.a.label) {
-		const elem = element.map[label.text];
-		if (options.atomColoring && elem)
-			atom.color = elementColor[label.text] || '#000';
+		if (label.text === atom.a.label) {
+			const elem = element.map[label.text];
+			if (options.atomColoring && elem)
+				atom.color = elementColor[label.text] || '#000';
+		}
+	} else {
+		// create empty label to concat additional labels (such as collection)
+		label.text = '';
 	}
 
 	label.path = paper.text(ps.x, ps.y, label.text)
@@ -534,6 +548,28 @@ function showHydrogen(atom, render, implh, data) { // eslint-disable-line max-st
 		data.leftMargin -= hydrogen.rbb.width + delta;
 	}
 	return Object.assign(data, { hydrogen, hydroIndex });
+}
+
+function showCollection(atom, render, collection, data) {
+	var ps = scale.obj2scaled(atom.a.pp, render.options);
+	var options = render.options;
+	var coll = {};
+	coll.text = collection.label;
+	coll.path = render.paper.text(ps.x, ps.y, coll.text)
+		.attr({
+			font: options.font,
+			'font-size': options.fontszsub,
+			fill: '#000'
+		});
+	coll.rbb = util.relBox(coll.path.getBBox());
+	draw.recenterText(coll.path, coll.rbb);
+	/* eslint-disable no-mixed-operators*/
+
+	pathAndRBoxTranslate(coll.path, coll.rbb,
+		data.rightMargin ? 0.5 * data.rightMargin : 0,
+		data.rightMargin ? -1 * coll.rbb.height : 0);
+	/* eslint-enable no-mixed-operators*/
+	return coll;
 }
 
 function showWarning(atom, render, leftMargin, rightMargin) {
