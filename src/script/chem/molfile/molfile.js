@@ -206,8 +206,8 @@ Molfile.prototype.writePaddedFloat = function (number, width, precision) {
 Molfile.prototype.writeCTabHeader = function (version) {
 	/* saver */
 
-	this.writePaddedNumber(this.molecule.atoms.size, 3);
-	this.writePaddedNumber(this.molecule.bonds.size, 3);
+	this.writePaddedNumber(version ==='v2000' ? this.molecule.atoms.size : 0, 3);
+	this.writePaddedNumber(version === 'v2000' ? this.molecule.bonds.size : 0, 3);
 
 	this.writePaddedNumber(0, 3);
 	this.writeWhiteSpace(3);
@@ -508,7 +508,16 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
 	this.molecule.atoms.forEach((atom, id) => {
-		this.writeCR(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} -${atom.pp.y} 0 0`);
+		this.write(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} -${atom.pp.y} 0 0`);
+
+		Object.entries(utils.fmtInfo.v30atomPropMap).forEach((entry) => {
+			const [key, value] = entry;
+			if (atom[value] && !(key === 'VAL' && atom[value] <= 0)) {
+				this.write(` ${key}=${atom[value]}`);
+			}
+		});
+
+		this.writeCR();
 	});
 	this.writeCR('M  V30 END ATOM');
 
@@ -516,7 +525,13 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	this.writeCR('M  V30 BEGIN BOND');
 	this.molecule.bonds.forEach((bond, id) => {
 		var type = bond.type;
-		this.writeCR(`M  V30 ${id + 1} ${type} ${bond.begin + 1} ${bond.end + 1}`);
+		this.write(`M  V30 ${id + 1} ${type} ${bond.begin + 1} ${bond.end + 1}`);
+
+		if (bond.stereo) {
+			this.write(` CFG=${bond.stereo}`);
+		}
+
+		this.writeCR();
 	});
 	this.writeCR('M  V30 END BOND');
 
@@ -535,7 +550,7 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	}
 
 	this.writeCR('M  V30 END CTAB');
-	this.writeCR('M  V30 END');
+	this.writeCR('M  END');
 };
 
 export default Molfile;
