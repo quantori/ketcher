@@ -52,7 +52,7 @@ class Save extends Component {
 		super(props);
 		this.isRxn = this.props.struct.hasRxnArrow();
 
-		const formats = [this.isRxn ? 'rxn' : 'mol', 'smiles'];
+		const formats = [...(this.isRxn ? ['rxn'] : [structFormat.MOL_V3000, structFormat.MOL_V2000]), 'smiles'];
 		if (this.props.server) formats.push('smiles-ext', 'smarts', 'inchi', 'inchi-aux', 'cml');
 
 		this.saveSchema = saveSchema;
@@ -61,7 +61,7 @@ class Save extends Component {
 			enumNames: formats.map(fmt => structFormat.map[fmt].name)
 		});
 
-		this.changeType(this.isRxn ? 'rxn' : 'mol')
+		this.changeType(this.isRxn ? 'rxn' : structFormat.MOL_V3000)
 			.then(res => (res instanceof Error ? props.onCancel() : null));
 	}
 
@@ -116,7 +116,7 @@ class Save extends Component {
 			>
 				<Form
 					schema={this.saveSchema}
-					init={{ filename, format: this.isRxn ? 'rxn' : 'mol' }}
+					init={{ filename, format: this.isRxn ? 'rxn' : structFormat.MOL_V3000 }}
 					{...formState}
 				>
 					<Field name="filename" />

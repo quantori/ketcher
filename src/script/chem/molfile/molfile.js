@@ -137,8 +137,11 @@ Molfile.prototype.saveMolecule = function (molecule, skipSGroupErrors, norgroups
 
 	this.writeHeader();
 
-	// TODO: saving to V3000
-	this.writeCTab2000();
+	if (this.v3000) {
+		this.writeCTab3000();
+	} else {
+		this.writeCTab2000();
+	}
 
 	return this.molfile;
 };
@@ -200,7 +203,7 @@ Molfile.prototype.writePaddedFloat = function (number, width, precision) {
 	this.write(utils.paddedNum(number, width, precision));
 };
 
-Molfile.prototype.writeCTab2000Header = function () {
+Molfile.prototype.writeCTabHeader = function (version) {
 	/* saver */
 
 	this.writePaddedNumber(this.molecule.atoms.size, 3);
@@ -212,7 +215,15 @@ Molfile.prototype.writeCTab2000Header = function () {
 	this.writePaddedNumber(0, 3);
 	this.writeWhiteSpace(12);
 	this.writePaddedNumber(999, 3);
-	this.writeCR(' V2000');
+	this.writeCR(` ${version}`);
+};
+
+Molfile.prototype.writeCTab2000Header = function () {
+	this.writeCTabHeader('V2000');
+};
+
+Molfile.prototype.writeCTab3000Header = function () {
+	this.writeCTabHeader('V3000');
 };
 
 Molfile.prototype.writeCTab2000 = function (rgroups) { // eslint-disable-line max-statements
@@ -484,6 +495,47 @@ Molfile.prototype.writeCTab2000 = function (rgroups) { // eslint-disable-line ma
 	// TODO: write M  LOG
 
 	this.writeCR('M  END');
+};
+
+Molfile.prototype.writeCTab3000 = function (rgroups) {
+	this.writeCTab3000Header();
+
+	this.writeCR('M  V30 BEGIN CTAB');
+	// M  V30 COUNTS 25 24 0 0 0
+
+	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} 0 0 0`);
+
+	// atoms
+	this.writeCR('M  V30 BEGIN ATOM');
+	this.molecule.atoms.forEach((atom, id) => {
+		this.writeCR(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} -${atom.pp.y} 0 0`);
+	});
+	this.writeCR('M  V30 END ATOM');
+
+	// bons
+	this.writeCR('M  V30 BEGIN BOND');
+	this.molecule.bonds.forEach((bond, id) => {
+		var type = bond.type;
+		this.writeCR(`M  V30 ${id + 1} ${type} ${bond.begin + 1} ${bond.end + 1}`);
+	});
+	this.writeCR('M  V30 END BOND');
+
+	// collections
+	if (this.molecule.collections.size > 0) {
+		this.writeCR('M  V30 BEGIN COLLECTION');
+		this.molecule.collections.forEach((collection, id) => {
+			var atoms = collection.atoms;
+			this.write(`M  V30 ${collection.name}/${collection.subname} ATOMS=(${atoms.length}`);
+			atoms.forEach((atom) => {
+				this.write(` ${atom}`);
+			});
+			this.writeCR(')');
+		});
+		this.writeCR('M  V30 END COLLECTION');
+	}
+
+	this.writeCR('M  V30 END CTAB');
+	this.writeCR('M  V30 END');
 };
 
 export default Molfile;

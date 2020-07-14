@@ -16,6 +16,7 @@
 
 import { getDefaultOptions } from '../../data/schema/options-schema';
 import { initSdata, sdataReducer } from './sdata';
+import * as structFormat from '../../data/convert/structformat';
 
 export const formsState = { // TODO: create from schema.{smth}.defaultValue
 	atomProps: {
@@ -89,7 +90,7 @@ export const formsState = { // TODO: create from schema.{smth}.defaultValue
 		valid: true,
 		result: {
 			filename: 'ketcher',
-			format: 'mol'
+			format: structFormat.MOL_V3000
 		}
 	},
 	settings: {

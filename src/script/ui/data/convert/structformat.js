@@ -17,6 +17,10 @@
 import molfile from '../../../chem/molfile';
 import smiles from '../../../chem/smiles';
 
+export const MOL_V2000 = 'molV2000';
+export const MOL_V3000 = 'molV3000';
+export const DEFAULT_MOL_VERSION = MOL_V3000;
+
 export const map = {
 	mol: {
 		name: 'MDL Molfile',
@@ -62,6 +66,18 @@ export const map = {
 		supportsCoords: true
 	}
 };
+map[MOL_V2000] = {
+	name: 'MDL Molfile v2000',
+	mime: 'chemical/x-mdl-molfile',
+	ext: ['.mol'],
+	supportsCoords: true
+};
+map[MOL_V3000] = {
+	name: 'MDL Molfile v3000',
+	mime: 'chemical/x-mdl-molfile',
+	ext: ['.mol'],
+	supportsCoords: true
+};
 
 export function guess(structStr, strict) {
 	// Mimic Indigo/molecule_auto_loader.cpp as much as possible
@@ -76,7 +92,7 @@ export function guess(structStr, strict) {
 		const end = molMatch.index + molMatch[0].length;
 		if (end === molStr.length ||
 			molStr.slice(end, end + 20).search(/^\$(MOL|END CTAB)$/m) !== -1)
-			return 'mol';
+			return MOL_V3000;
 	}
 	if (molStr[0] === '<' && molStr.indexOf('<molecule') !== -1)
 		return 'cml';
@@ -88,15 +104,16 @@ export function guess(structStr, strict) {
 		return 'smiles';
 
 	// Molfile by default as Indigo does
-	return strict ? null : 'mol';
+	return strict ? null : MOL_V3000;
 }
 
 export function toString(struct, format, server, serverOpts) {
 	console.assert(map[format], 'No such format');
 
 	return new Promise((resolve) => {
-		const moldata = molfile.stringify(struct);
-		if (format === 'mol' || format === 'rxn') {
+		console.log('to string ', format);
+		const moldata = molfile.stringify(struct, {v3000: format === MOL_V3000});
+		if (format === MOL_V3000 || format === MOL_V2000 || format === 'rxn') {
 			resolve(moldata);
 		} else if (format === 'smiles') {
 			resolve(smiles.stringify(struct));
@@ -122,7 +139,7 @@ export function fromString(structStr, opts, server, serverOpts) {
 		const format = guess(structStr);
 		console.assert(map[format], 'No such format');
 
-		if (format === 'mol' || format === 'rxn') {
+		if (format === MOL_V3000 || format === MOL_V2000 || format === 'rxn') {
 			const struct = molfile.parse(structStr, opts);
 			resolve(struct);
 		} else {
@@ -131,10 +148,10 @@ export function fromString(structStr, opts, server, serverOpts) {
 				.then(() => (
 					withCoords ? server.convert({
 						struct: structStr,
-						output_format: map['mol'].mime
+						output_format: map[MOL_V3000].mime
 					}, serverOpts) : server.layout({
 						struct: structStr.trim(),
-						output_format: map['mol'].mime
+						output_format: map[MOL_V3000].mime
 					}, serverOpts)
 				))
 				.catch((err) => {

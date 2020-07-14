@@ -68,8 +68,8 @@ Struct.prototype.isBlank = function () {
  * @param aidMap { Map<number, number>? }
  * @returns { Struct }
  */
-Struct.prototype.clone = function (atomSet, bondSet, dropRxnSymbols, aidMap) {
-	return this.mergeInto(new Struct(), atomSet, bondSet, dropRxnSymbols, false, aidMap);
+Struct.prototype.clone = function (atomSet, bondSet, dropRxnSymbols, aidMap, collectionMap) {
+	return this.mergeInto(new Struct(), atomSet, bondSet, dropRxnSymbols, false, aidMap, collectionMap);
 };
 
 Struct.prototype.getScaffold = function () {
@@ -112,9 +112,10 @@ Struct.prototype.getFragment = function (fid) {
  * @param aidMap { Map<number, number>? }
  * @returns { Struct }
  */
-Struct.prototype.mergeInto = function (cp, atomSet, bondSet, dropRxnSymbols, keepAllRGroups, aidMap) { // eslint-disable-line max-params, max-statements
+Struct.prototype.mergeInto = function (cp, atomSet, bondSet, dropRxnSymbols, keepAllRGroups, aidMap, collectionSet) { // eslint-disable-line max-params, max-statements
 	atomSet = atomSet || new Pile(this.atoms.keys());
 	bondSet = bondSet || new Pile(this.bonds.keys());
+	collectionSet = collectionSet || new Pile(this.collections.keys());
 	aidMap = aidMap || new Map();
 
 	bondSet = bondSet.filter((bid) => {
@@ -176,6 +177,13 @@ Struct.prototype.mergeInto = function (cp, atomSet, bondSet, dropRxnSymbols, kee
 	this.bonds.forEach((bond, bid) => {
 		if (bondSet.has(bid))
 			bidMap.set(bid, cp.bonds.add(bond.clone(aidMap)));
+	});
+
+	const cidMap = new Map();
+	this.collections.forEach((collection, cid) => {
+		if (collectionSet.has(cid)) {
+			cidMap.set(cid, cp.collections.add(Object.assign({}, collection)));
+		}
 	});
 
 	this.sgroups.forEach((sg) => {

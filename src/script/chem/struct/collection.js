@@ -33,4 +33,15 @@ function Collection(params) { // eslint-disable-line max-statements
 	}
 }
 
+Collection.prototype.clone = function (cidMap) {
+	const cp = new Collection(this);
+	if (cidMap) {
+		cp.name = cidMap.get(cp.name);
+		cp.subname = cidMap.get(cp.subname);
+		cp.atoms = cidMap.get(cp.atoms);
+	}
+	return cp;
+};
+
+
 export default Collection;
