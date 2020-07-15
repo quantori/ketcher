@@ -39,7 +39,7 @@ function saveSmiles() {
 
 function getMolfile() {
 	return molfile.stringify(ketcher.editor.struct(),
-		{ ignoreErrors: true });
+		{ ignoreErrors: true, v3000: true });
 }
 
 function setMolecule(molString) {
