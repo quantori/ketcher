@@ -47,6 +47,7 @@ function SGroup(type) { // eslint-disable-line max-statements
 		connectivity: 'ht', // head-to-head, head-to-tail or either-unknown
 		name: '',
 		subscript: 'n',
+		bracketType: '',
 
 		// data s-group fields
 		attached: false,
@@ -150,10 +151,12 @@ SGroup.clone = function (sgroup, aidMap) {
 
 	cp.atoms = sgroup.atoms.map(elem => aidMap.get(elem));
 	cp.pp = sgroup.pp;
+	cp.label = sgroup.label;
 	cp.bracketBox = sgroup.bracketBox;
 	cp.patoms = null;
 	cp.bonds = null;
 	cp.allAtoms = sgroup.allAtoms;
+	cp.brkxyz = sgroup.brkxyz;
 	return cp;
 };
 

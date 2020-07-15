@@ -58,7 +58,7 @@ Molfile.prototype.prepareSGroups = function (skipErrors, preserveIndigoDesc) {
 		/* eslint-disable no-mixed-operators*/
 		if (errorIgnore ||
 			!preserveIndigoDesc && /^INDIGO_.+_DESC$/i.test(sgroup.data.fieldName)) {
-		/* eslint-enable no-mixed-operators*/
+			/* eslint-enable no-mixed-operators*/
 			errors += errorIgnore;
 			toRemove.push(sgroup.id);
 		}
@@ -156,7 +156,7 @@ Molfile.prototype.writeHeader = function () {
 	this.write('Ketcher');
 	this.writeWhiteSpace();
 	this.writeCR(((date.getMonth() + 1) + '').padStart(2) + (date.getDate() + '').padStart(2) + ((date.getFullYear() % 100) + '').padStart(2) +
-	(date.getHours() + '').padStart(2) + (date.getMinutes() + '').padStart(2) + '2D 1   1.00000     0.00000     0');
+		(date.getHours() + '').padStart(2) + (date.getMinutes() + '').padStart(2) + '2D 1   1.00000     0.00000     0');
 	this.writeCR();
 };
 
@@ -165,12 +165,21 @@ Molfile.prototype.write = function (str) {
 	this.molfile += str;
 };
 
-Molfile.prototype.writeCR = function (str) {
+Molfile.prototype.writeCR = function (str, withV3000breakLines) {
 	/* saver */
 	if (arguments.length == 0)
 		str = '';
 
-	this.molfile += str + '\n';
+	if (withV3000breakLines) {
+		var s = str
+		while (s.length >= 80) {
+			this.writeCR(s.substr(0, 79) + '-');
+			s = 'M  V30 ' + s.substring(79);
+		}
+		this.writeCR(s);
+	} else {
+		this.molfile += str + '\n';
+	}
 };
 
 Molfile.prototype.writeWhiteSpace = function (length) {
@@ -206,7 +215,7 @@ Molfile.prototype.writePaddedFloat = function (number, width, precision) {
 Molfile.prototype.writeCTabHeader = function (version) {
 	/* saver */
 
-	this.writePaddedNumber(version ==='v2000' ? this.molecule.atoms.size : 0, 3);
+	this.writePaddedNumber(version === 'v2000' ? this.molecule.atoms.size : 0, 3);
 	this.writePaddedNumber(version === 'v2000' ? this.molecule.bonds.size : 0, 3);
 
 	this.writePaddedNumber(0, 3);
@@ -534,6 +543,52 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 		this.writeCR();
 	});
 	this.writeCR('M  V30 END BOND');
+
+	// sgroup
+	if (this.molecule.sgroups.size > 0) {
+		console.log('create sgroups');
+
+		this.writeCR('M  V30 BEGIN SGROUP');
+
+		this.molecule.sgroups.forEach((sgroup, id) => {
+			console.log(' render sgroup: ', sgroup);
+			var str = `M  V30 ${id + 1} ${sgroup.type} ${sgroup.label}`;
+
+			const atoms = sgroup.atoms;
+			str += ` ATOMS=(${atoms.length}`;
+			atoms.forEach((atom) => {
+				str += ` ${atom + 1}`;
+			});
+			str += ')';
+
+			const bonds = sgroup.bonds;
+			str += ` XBONDS=(${bonds.length}`;
+			bonds.forEach((bond) => {
+				str += ` ${bond + 1}`;
+			});
+			str += ')';
+
+			const brks = sgroup.brkxyz;
+			brks.forEach((brks) => {
+				str += ` BRKXYZ=(${brks.length}`;
+				brks.forEach((brk) => {
+					str += ` ${brk}`;
+				})
+				str += ')';
+			})
+
+			str += ` CONNECT=${sgroup.data.connectivity.toUpperCase()}`;
+
+			if (sgroup.data.bracketType) {
+				str += ` BRKTYPE=${sgroup.data.bracketType}`
+			}
+
+			this.writeCR(str, true);
+
+		});
+
+		this.writeCR('M  V30 END SGROUP');
+	}
 
 	// collections
 	if (this.molecule.collections.size > 0) {

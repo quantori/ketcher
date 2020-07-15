@@ -170,6 +170,8 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.subscript = props['MULT'][0] - 0;
 		if (props['LABEL'])
 			sg.data.subscript = props['LABEL'][0].trim();
+		if (props['BRKTYP'])
+			sg.data.bracketType = props['BRKTYP'][0].trim();
 		if (props['CONNECT'])
 			sg.data.connectivity = props['CONNECT'][0].toLowerCase();
 		if (props['FIELDDISP'])
@@ -463,7 +465,7 @@ function parseBracedNumberList(line, shift) {
 	shift = shift || 0;
 
 	for (var i = 1; i < split.length; ++i) {
-		var value = parseInt(split[i]);
+		var value = parseFloat(split[i]);
 		if (!isNaN(value)) // eslint-disable-line
 			list.push(value + shift);
 	}
