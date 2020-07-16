@@ -568,13 +568,15 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			}
 
 			const brks = sgroup.brkxyz;
-			brks.forEach((brks) => {
-				str += ` BRKXYZ=(${brks.length}`;
-				brks.forEach((brk) => {
-					str += ` ${brk}`;
-				})
-				str += ')';
-			})
+			if (brks) {
+				brks.forEach((brks) => {
+					str += ` BRKXYZ=(${brks.length}`;
+					brks.forEach((brk) => {
+						str += ` ${brk}`;
+					})
+					str += ')';
+				});
+			}
 
 			if (sgroup.data.fieldName) {
 				str += ` FIELDNAME=${sgroup.data.fieldName}`;
