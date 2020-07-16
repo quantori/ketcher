@@ -173,8 +173,9 @@ Molfile.prototype.writeCR = function (str, withV3000breakLines) {
 	if (withV3000breakLines) {
 		var s = str
 		while (s.length >= 80) {
-			this.writeCR(s.substr(0, 79) + '-');
-			s = 'M  V30 ' + s.substring(79);
+			const splitIndex = s.substr(0, 79).lastIndexOf(' ')
+			this.writeCR( s.substr(0, splitIndex) + ' -');
+			s = 'M  V30 ' + s.substring(splitIndex + 1);
 		}
 		this.writeCR(s);
 	} else {
@@ -510,14 +511,12 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	this.writeCTab3000Header();
 
 	this.writeCR('M  V30 BEGIN CTAB');
-	// M  V30 COUNTS 25 24 0 0 0
-
-	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} 0 0 0`);
+	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} ${this.molecule.sgroups.size} 0 0`);
 
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
 	this.molecule.atoms.forEach((atom, id) => {
-		this.write(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} -${atom.pp.y} 0 0`);
+		this.write(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} ${-1 * atom.pp.y} 0 0`);
 
 		Object.entries(utils.fmtInfo.v30atomPropMap).forEach((entry) => {
 			const [key, value] = entry;
@@ -537,7 +536,8 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 		this.write(`M  V30 ${id + 1} ${type} ${bond.begin + 1} ${bond.end + 1}`);
 
 		if (bond.stereo) {
-			this.write(` CFG=${bond.stereo}`);
+			const stereo = Object.entries(utils.fmtInfo.v30bondStereoMap).find(entry => entry[1] === bond.stereo)
+			this.write(` CFG=${stereo[0]}`);
 		}
 
 		this.writeCR();
@@ -546,12 +546,9 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 
 	// sgroup
 	if (this.molecule.sgroups.size > 0) {
-		console.log('create sgroups');
-
 		this.writeCR('M  V30 BEGIN SGROUP');
 
 		this.molecule.sgroups.forEach((sgroup, id) => {
-			console.log(' render sgroup: ', sgroup);
 			var str = `M  V30 ${id + 1} ${sgroup.type} ${sgroup.label}`;
 
 			const atoms = sgroup.atoms;
@@ -562,11 +559,13 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			str += ')';
 
 			const bonds = sgroup.bonds;
-			str += ` XBONDS=(${bonds.length}`;
-			bonds.forEach((bond) => {
-				str += ` ${bond + 1}`;
-			});
-			str += ')';
+			if (bonds && bonds.length) {
+				str += ` XBONDS=(${bonds.length}`;
+				bonds.forEach((bond) => {
+					str += ` ${bond + 1}`;
+				});
+				str += ')';
+			}
 
 			const brks = sgroup.brkxyz;
 			brks.forEach((brks) => {
@@ -577,11 +576,42 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 				str += ')';
 			})
 
-			str += ` CONNECT=${sgroup.data.connectivity.toUpperCase()}`;
+			if (sgroup.data.fieldName) {
+				str += ` FIELDNAME=${sgroup.data.fieldName}`;
+			}
+			if (sgroup.data.fieldInfo) {
+				str += ` FIELDINFO=${sgroup.data.fieldInfo}`;
+			}
+			if (sgroup.pp) {
+				// format 'xxxxx.xxxxyyyyy.yyyy eeefgh i jjjkkk ll m noo'
+				var fieldData =
+					utils.paddedNum(sgroup.pp.x, 10, 4) + // 'xxxxx.xxxx'
+					utils.paddedNum(-1 * sgroup.pp.y, 10, 4) + // 'yyyyy.yyyy'
+					''.padStart(4) + // ' eee'
+					(sgroup.data.attached ? 'A' : 'D') + // 'f'
+					(sgroup.data.absolute ? 'A' : 'R') + // 'g'
+					(sgroup.data.showUnits ? 'D' : ' ') + // 'h'
+					''.padStart(3) + // ' i '
+					(sgroup.data.nCharsToDisplay === -1 ? 'ALL' : sgroup.data.nCharsToDisplay).padStart(3) + // 'jjj'
+					'1'.padStart(3) + // 'kkk' is always 1
+					''.padStart(3) + // ' ll'
+					sgroup.data.tagChar.padStart(2) + // ' m'
+					utils.paddedNum(sgroup.data.daspPos, 3); // 'n'
+
+				str += ` FIELDDISP="${fieldData}"`;
+			}
+			if (sgroup.data.fieldValue) {
+				str += ` FIELDDATA=${sgroup.data.fieldValue}`;
+			}
 
 			if (sgroup.data.bracketType) {
-				str += ` BRKTYPE=${sgroup.data.bracketType}`
+				str += ` BRKTYP=${sgroup.data.bracketType}`
 			}
+			if (sgroup.data.parent) {
+				str += ` PARENT=${sgroup.data.parent}`
+			}
+
+			str += ` CONNECT=${sgroup.data.connectivity.toUpperCase()}`;
 
 			this.writeCR(str, true);
 

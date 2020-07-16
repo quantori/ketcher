@@ -48,6 +48,7 @@ function SGroup(type) { // eslint-disable-line max-statements
 		name: '',
 		subscript: 'n',
 		bracketType: '',
+		parent: '',
 
 		// data s-group fields
 		attached: false,
@@ -58,6 +59,7 @@ function SGroup(type) { // eslint-disable-line max-statements
 		daspPos: 1,
 		fieldType: 'F',
 		fieldName: '',
+		fieldInfo: '',
 		fieldValue: '',
 		units: '',
 		query: '',
