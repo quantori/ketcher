@@ -174,12 +174,16 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.bracketType = props['BRKTYP'][0].trim();
 		if (props['CONNECT'])
 			sg.data.connectivity = props['CONNECT'][0].toLowerCase();
+		if (props['PARENT'])
+			sg.data.parent = props['PARENT'][0].toLowerCase();
 		if (props['FIELDDISP'])
 			sGroup.applyDataSGroupInfo(sg, stripQuotes(props['FIELDDISP'][0]));
 		if (props['FIELDDATA'])
 			sGroup.applyDataSGroupData(sg, props['FIELDDATA'][0], true);
 		if (props['FIELDNAME'])
 			sGroup.applyDataSGroupName(sg, props['FIELDNAME'][0]);
+		if (props['FIELDINFO'])
+			sGroup.applyDataSGroupFieldInfo(sg, props['FIELDINFO'][0]);
 		if (props['QUERYTYPE'])
 			sGroup.applyDataSGroupQuery(sg, props['QUERYTYPE'][0]);
 		if (props['QUERYOP'])

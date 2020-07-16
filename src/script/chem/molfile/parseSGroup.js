@@ -198,6 +198,10 @@ function applyDataSGroupName(sg, name) {
 	/* reader */
 	sg.data.fieldName = name;
 }
+function applyDataSGroupFieldInfo(sg, info) {
+	/* reader */
+	sg.data.fieldInfo = info;
+}
 
 function applyDataSGroupQuery(sg, query) {
 	/* reader */
@@ -307,6 +311,7 @@ export default {
 	applyDataSGroupDesc,
 	applyDataSGroupInfo,
 	applyDataSGroupData,
+	applyDataSGroupFieldInfo,
 	applyDataSGroupInfoLine,
 	applyDataSGroupDataLine
 };
