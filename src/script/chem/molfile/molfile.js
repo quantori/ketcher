@@ -511,7 +511,7 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	this.writeCTab3000Header();
 
 	this.writeCR('M  V30 BEGIN CTAB');
-	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} ${this.molecule.sgroups.size} 0 0`);
+	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} ${this.molecule.sgroups.size} 0 ${this.molecule.isChiral ? '1' : '0'}`);
 
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
