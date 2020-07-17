@@ -511,7 +511,7 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	this.writeCTab3000Header();
 
 	this.writeCR('M  V30 BEGIN CTAB');
-	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} ${this.molecule.sgroups.size} 0 0`);
+	this.writeCR(`M  V30 COUNTS ${this.molecule.atoms.size} ${this.molecule.bonds.size} ${this.molecule.sgroups.size} 0 ${this.molecule.isChiral ? '1' : '0'}`);
 
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
@@ -578,6 +578,17 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 				});
 			}
 
+			const cStates = sgroup.cState;
+			if (cStates) {
+				cStates.forEach((cState) => {
+					str += ` CSTATE=(4`;
+					cState.forEach((cStateItem) => {
+						str += ` ${cStateItem}`;
+					})
+					str += ')';
+				});
+			}
+
 			if (sgroup.data.fieldName) {
 				str += ` FIELDNAME=${sgroup.data.fieldName}`;
 			}
@@ -614,6 +625,13 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			}
 
 			str += ` CONNECT=${sgroup.data.connectivity.toUpperCase()}`;
+
+			if (sgroup.data.subscript || sgroup.data.name) {
+				str += ` LABEL=${sgroup.data.subscript || sgroup.data.name}`;
+			}
+			if (sgroup.data.estate) {
+				str += ` ESTATE=${sgroup.data.estate}`;
+			}
 
 			this.writeCR(str, true);
 
