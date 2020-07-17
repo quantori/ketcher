@@ -578,6 +578,17 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 				});
 			}
 
+			const cStates = sgroup.cState;
+			if (cStates) {
+				cStates.forEach((cState) => {
+					str += ` CSTATE=(4`;
+					cState.forEach((cStateItem) => {
+						str += ` ${cStateItem}`;
+					})
+					str += ')';
+				});
+			}
+
 			if (sgroup.data.fieldName) {
 				str += ` FIELDNAME=${sgroup.data.fieldName}`;
 			}
@@ -614,6 +625,13 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			}
 
 			str += ` CONNECT=${sgroup.data.connectivity.toUpperCase()}`;
+
+			if (sgroup.data.subscript || sgroup.data.name) {
+				str += ` LABEL=${sgroup.data.subscript || sgroup.data.name}`;
+			}
+			if (sgroup.data.estate) {
+				str += ` ESTATE=${sgroup.data.estate}`;
+			}
 
 			this.writeCR(str, true);
 

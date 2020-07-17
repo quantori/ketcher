@@ -160,12 +160,21 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 		if (props['PATOMS'])
 			sg.patoms = parseBracedNumberList(props['PATOMS'][0], -1);
 		sg.bonds = props['BONDS'] ? parseBracedNumberList(props['BONDS'][0], -1) : [];
+
 		var brkxyzStrs = props['BRKXYZ'];
 		sg.brkxyz = [];
 		if (brkxyzStrs) {
 			for (var j = 0; j < brkxyzStrs.length; ++j)
 				sg.brkxyz.push(parseBracedNumberList(brkxyzStrs[j]));
 		}
+
+		var cStateStrs = props['CSTATE'];
+		sg.cState= [];
+		if (cStateStrs) {
+			for (let j = 0; j < cStateStrs.length; ++j)
+				sg.cState.push(parseBracedNumberList(cStateStrs[j]));
+		}
+
 		if (props['MULT'])
 			sg.data.subscript = props['MULT'][0] - 0;
 		if (props['LABEL'])
@@ -176,6 +185,8 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.connectivity = props['CONNECT'][0].toLowerCase();
 		if (props['PARENT'])
 			sg.data.parent = props['PARENT'][0].toLowerCase();
+		if (props['ESTATE'])
+			sg.data.estate = props['ESTATE'][0].trim();
 		if (props['FIELDDISP'])
 			sGroup.applyDataSGroupInfo(sg, stripQuotes(props['FIELDDISP'][0]));
 		if (props['FIELDDATA'])

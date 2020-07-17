@@ -111,7 +111,6 @@ export function toString(struct, format, server, serverOpts) {
 	console.assert(map[format], 'No such format');
 
 	return new Promise((resolve) => {
-		console.log('to string ', format);
 		const moldata = molfile.stringify(struct, {v3000: format === MOL_V3000});
 		if (format === MOL_V3000 || format === MOL_V2000 || format === 'rxn') {
 			resolve(moldata);
