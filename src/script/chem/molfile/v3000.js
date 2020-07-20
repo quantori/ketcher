@@ -24,6 +24,7 @@ import utils from './utils';
 
 function parseAtomLineV3000(line) { // eslint-disable-line max-statements
 	/* reader */
+	console.log('parse line ', line)
 	var split, subsplit, key, value, i;
 	split = spaceparsplit(line);
 	var params = {
@@ -35,11 +36,15 @@ function parseAtomLineV3000(line) { // eslint-disable-line max-statements
 		label = label.substr(1, label.length - 2); // strip qutation marks
 	if (label.charAt(label.length - 1) == ']') { // assume atom list
 		label = label.substr(0, label.length - 1); // remove ']'
+
 		var atomListParams = {};
 		atomListParams.notList = false;
 		if (label.substr(0, 5) == 'NOT [') {
 			atomListParams.notList = true;
 			label = label.substr(5); // remove 'NOT ['
+		} else if (label.substr(0, 4) == 'NOT[') {
+			atomListParams.notList = true;
+			label = label.substr(4); // remove 'NOT['
 		} else if (label.charAt(0) != '[') {
 			throw new Error('Error: atom list expected, found \'' + label + '\'');
 		} else {

@@ -516,7 +516,11 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
 	this.molecule.atoms.forEach((atom, id) => {
-		this.write(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} ${-1 * atom.pp.y} 0 0`);
+		let label = atom.atomList ? (
+			(atom.atomList.notList ? 'NOT [' : '[') + atom.atomList.labelList() + ']'
+		) : atom.label;
+
+		this.write(`M  V30 ${id + 1} ${label} ${atom.pp.x} ${-1 * atom.pp.y} 0 0`);
 
 		Object.entries(utils.fmtInfo.v30atomPropMap).forEach((entry) => {
 			const [key, value] = entry;
