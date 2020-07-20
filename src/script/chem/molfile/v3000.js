@@ -187,6 +187,8 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.parent = props['PARENT'][0].toLowerCase();
 		if (props['ESTATE'])
 			sg.data.estate = props['ESTATE'][0].trim();
+		if (props['CLASS'])
+			sg.data.class = props['CLASS'][0].trim();
 		if (props['FIELDDISP'])
 			sGroup.applyDataSGroupInfo(sg, stripQuotes(props['FIELDDISP'][0]));
 		if (props['FIELDDATA'])
@@ -250,8 +252,11 @@ function parseCTabV3000(ctabLines, norgroups) { // eslint-disable-line max-state
 				shift = parseCollectionV3000(ctab, ctabLines, shift);
 			else if (ctabLines[shift].trim() == 'M  V30 BEGIN SGROUP')
 				shift = parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift);
-			else
-				throw Error('CTAB V3000 invalid');
+			else if (ctabLines[shift].startsWith('M  V30 LINKNODE')) {
+				// todo: support atom links
+				shift++;
+			} else
+				throw Error('CTAB V3000 invalid 3');
 		}
 	}
 	if (ctabLines[shift++].trim() != 'M  V30 END CTAB')

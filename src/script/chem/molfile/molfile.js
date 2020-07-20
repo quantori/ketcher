@@ -632,6 +632,12 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			if (sgroup.data.estate) {
 				str += ` ESTATE=${sgroup.data.estate}`;
 			}
+			if (sgroup.data.class) {
+				str += ` CLASS=${sgroup.data.class}`;
+			}
+			if (sgroup.data.mul && sgroup.data.mul != 1) {
+				str += ` MULT=${sgroup.data.mul}`;
+			}
 
 			this.writeCR(str, true);
 
