@@ -529,6 +529,16 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			}
 		});
 
+
+		if (atom.rglabel != null && atom.label === 'R#') { // TODO need to force rglabel=null when label is not 'R#'
+			let rglabelList = [];
+			for (var rgi = 0; rgi < 32; rgi++)
+				if (atom.rglabel & (1 << rgi)) rglabelList.push(rgi + 1);
+			if (rglabelList.length) {
+				this.write(` RGROUPS=(${rglabelList.length} ${rglabelList.join(' ')})`)
+			}
+		}
+
 		this.writeCR();
 	});
 	this.writeCR('M  V30 END ATOM');
