@@ -52,6 +52,7 @@ function SGroup(type) { // eslint-disable-line max-statements
 		bracketType: '',
 		parent: '',
 		estate: '',
+		class: '',
 
 		// data s-group fields
 		attached: false,

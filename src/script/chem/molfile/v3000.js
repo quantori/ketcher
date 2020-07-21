@@ -35,11 +35,15 @@ function parseAtomLineV3000(line) { // eslint-disable-line max-statements
 		label = label.substr(1, label.length - 2); // strip qutation marks
 	if (label.charAt(label.length - 1) == ']') { // assume atom list
 		label = label.substr(0, label.length - 1); // remove ']'
+
 		var atomListParams = {};
 		atomListParams.notList = false;
 		if (label.substr(0, 5) == 'NOT [') {
 			atomListParams.notList = true;
 			label = label.substr(5); // remove 'NOT ['
+		} else if (label.substr(0, 4) == 'NOT[') {
+			atomListParams.notList = true;
+			label = label.substr(4); // remove 'NOT['
 		} else if (label.charAt(0) != '[') {
 			throw new Error('Error: atom list expected, found \'' + label + '\'');
 		} else {
@@ -187,6 +191,8 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.parent = props['PARENT'][0].toLowerCase();
 		if (props['ESTATE'])
 			sg.data.estate = props['ESTATE'][0].trim();
+		if (props['CLASS'])
+			sg.data.class = props['CLASS'][0].trim();
 		if (props['FIELDDISP'])
 			sGroup.applyDataSGroupInfo(sg, stripQuotes(props['FIELDDISP'][0]));
 		if (props['FIELDDATA'])
@@ -250,8 +256,11 @@ function parseCTabV3000(ctabLines, norgroups) { // eslint-disable-line max-state
 				shift = parseCollectionV3000(ctab, ctabLines, shift);
 			else if (ctabLines[shift].trim() == 'M  V30 BEGIN SGROUP')
 				shift = parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift);
-			else
-				throw Error('CTAB V3000 invalid');
+			else if (ctabLines[shift].startsWith('M  V30 LINKNODE')) {
+				// todo: support atom links
+				shift++;
+			} else
+				throw Error('CTAB V3000 invalid 3');
 		}
 	}
 	if (ctabLines[shift++].trim() != 'M  V30 END CTAB')

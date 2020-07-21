@@ -516,7 +516,11 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 	// atoms
 	this.writeCR('M  V30 BEGIN ATOM');
 	this.molecule.atoms.forEach((atom, id) => {
-		this.write(`M  V30 ${id + 1} ${atom.label} ${atom.pp.x} ${-1 * atom.pp.y} 0 0`);
+		let label = atom.atomList ? (
+			(atom.atomList.notList ? 'NOT [' : '[') + atom.atomList.labelList() + ']'
+		) : atom.label;
+
+		this.write(`M  V30 ${id + 1} ${label} ${atom.pp.x} ${-1 * atom.pp.y} 0 0`);
 
 		Object.entries(utils.fmtInfo.v30atomPropMap).forEach((entry) => {
 			const [key, value] = entry;
@@ -524,6 +528,16 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 				this.write(` ${key}=${atom[value]}`);
 			}
 		});
+
+
+		if (atom.rglabel != null && atom.label === 'R#') { // TODO need to force rglabel=null when label is not 'R#'
+			let rglabelList = [];
+			for (var rgi = 0; rgi < 32; rgi++)
+				if (atom.rglabel & (1 << rgi)) rglabelList.push(rgi + 1);
+			if (rglabelList.length) {
+				this.write(` RGROUPS=(${rglabelList.length} ${rglabelList.join(' ')})`)
+			}
+		}
 
 		this.writeCR();
 	});
@@ -631,6 +645,12 @@ Molfile.prototype.writeCTab3000 = function (rgroups) {
 			}
 			if (sgroup.data.estate) {
 				str += ` ESTATE=${sgroup.data.estate}`;
+			}
+			if (sgroup.data.class) {
+				str += ` CLASS=${sgroup.data.class}`;
+			}
+			if (sgroup.data.mul && sgroup.data.mul != 1) {
+				str += ` MULT=${sgroup.data.mul}`;
 			}
 
 			this.writeCR(str, true);
