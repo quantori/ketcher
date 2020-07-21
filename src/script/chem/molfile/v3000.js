@@ -24,7 +24,6 @@ import utils from './utils';
 
 function parseAtomLineV3000(line) { // eslint-disable-line max-statements
 	/* reader */
-	console.log('parse line ', line)
 	var split, subsplit, key, value, i;
 	split = spaceparsplit(line);
 	var params = {
