@@ -216,8 +216,8 @@ Molfile.prototype.writePaddedFloat = function (number, width, precision) {
 Molfile.prototype.writeCTabHeader = function (version) {
 	/* saver */
 
-	this.writePaddedNumber(version === 'v2000' ? this.molecule.atoms.size : 0, 3);
-	this.writePaddedNumber(version === 'v2000' ? this.molecule.bonds.size : 0, 3);
+	this.writePaddedNumber(version === 'V2000' ? this.molecule.atoms.size : 0, 3);
+	this.writePaddedNumber(version === 'V2000' ? this.molecule.bonds.size : 0, 3);
 
 	this.writePaddedNumber(0, 3);
 	this.writeWhiteSpace(3);
