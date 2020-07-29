@@ -35,11 +35,15 @@ function parseAtomLineV3000(line) { // eslint-disable-line max-statements
 		label = label.substr(1, label.length - 2); // strip qutation marks
 	if (label.charAt(label.length - 1) == ']') { // assume atom list
 		label = label.substr(0, label.length - 1); // remove ']'
+
 		var atomListParams = {};
 		atomListParams.notList = false;
 		if (label.substr(0, 5) == 'NOT [') {
 			atomListParams.notList = true;
 			label = label.substr(5); // remove 'NOT ['
+		} else if (label.substr(0, 4) == 'NOT[') {
+			atomListParams.notList = true;
+			label = label.substr(4); // remove 'NOT['
 		} else if (label.charAt(0) != '[') {
 			throw new Error('Error: atom list expected, found \'' + label + '\'');
 		} else {
@@ -160,12 +164,21 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 		if (props['PATOMS'])
 			sg.patoms = parseBracedNumberList(props['PATOMS'][0], -1);
 		sg.bonds = props['BONDS'] ? parseBracedNumberList(props['BONDS'][0], -1) : [];
+
 		var brkxyzStrs = props['BRKXYZ'];
 		sg.brkxyz = [];
 		if (brkxyzStrs) {
 			for (var j = 0; j < brkxyzStrs.length; ++j)
 				sg.brkxyz.push(parseBracedNumberList(brkxyzStrs[j]));
 		}
+
+		var cStateStrs = props['CSTATE'];
+		sg.cState= [];
+		if (cStateStrs) {
+			for (let j = 0; j < cStateStrs.length; ++j)
+				sg.cState.push(parseBracedNumberList(cStateStrs[j]));
+		}
+
 		if (props['MULT'])
 			sg.data.subscript = props['MULT'][0] - 0;
 		if (props['LABEL'])
@@ -174,12 +187,20 @@ function parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift) { // eslint-
 			sg.data.bracketType = props['BRKTYP'][0].trim();
 		if (props['CONNECT'])
 			sg.data.connectivity = props['CONNECT'][0].toLowerCase();
+		if (props['PARENT'])
+			sg.data.parent = props['PARENT'][0].toLowerCase();
+		if (props['ESTATE'])
+			sg.data.estate = props['ESTATE'][0].trim();
+		if (props['CLASS'])
+			sg.data.class = props['CLASS'][0].trim();
 		if (props['FIELDDISP'])
 			sGroup.applyDataSGroupInfo(sg, stripQuotes(props['FIELDDISP'][0]));
 		if (props['FIELDDATA'])
 			sGroup.applyDataSGroupData(sg, props['FIELDDATA'][0], true);
 		if (props['FIELDNAME'])
 			sGroup.applyDataSGroupName(sg, props['FIELDNAME'][0]);
+		if (props['FIELDINFO'])
+			sGroup.applyDataSGroupFieldInfo(sg, props['FIELDINFO'][0]);
 		if (props['QUERYTYPE'])
 			sGroup.applyDataSGroupQuery(sg, props['QUERYTYPE'][0]);
 		if (props['QUERYOP'])
@@ -235,8 +256,11 @@ function parseCTabV3000(ctabLines, norgroups) { // eslint-disable-line max-state
 				shift = parseCollectionV3000(ctab, ctabLines, shift);
 			else if (ctabLines[shift].trim() == 'M  V30 BEGIN SGROUP')
 				shift = parseSGroupV3000(ctab, ctabLines, sgroups, atomMap, shift);
-			else
-				throw Error('CTAB V3000 invalid');
+			else if (ctabLines[shift].startsWith('M  V30 LINKNODE')) {
+				// todo: support atom links
+				shift++;
+			} else
+				throw Error('CTAB V3000 invalid 3');
 		}
 	}
 	if (ctabLines[shift++].trim() != 'M  V30 END CTAB')

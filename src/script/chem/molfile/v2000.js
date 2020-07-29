@@ -141,7 +141,9 @@ function parsePropertyLines(ctab, ctabLines, shift, end, sGroups, rLogic) { // e
 			} else if (type == 'UNS') {
 				if (!props.get('unsaturatedAtom'))
 					props.set('unsaturatedAtom', sGroup.readKeyValuePairs(propertyData));
-				// else if (type == "LIN") // link atom
+				else if (type == "LIN") { // link atom
+					// todo: support atom links
+				}
 			} else if (type == 'RGP') { // rgroup atom
 				if (!props.get('rglabel'))
 					props.set('rglabel', new Pool());

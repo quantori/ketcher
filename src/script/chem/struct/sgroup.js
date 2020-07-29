@@ -41,6 +41,8 @@ function SGroup(type) { // eslint-disable-line max-statements
 	this.bonds = [];
 	this.xBonds = [];
 	this.neiAtoms = [];
+	this.cState = [];
+	this.brkxyz = [];
 	this.pp = null;
 	this.data = {
 		mul: 1, // multiplication count for MUL group
@@ -48,6 +50,9 @@ function SGroup(type) { // eslint-disable-line max-statements
 		name: '',
 		subscript: 'n',
 		bracketType: '',
+		parent: '',
+		estate: '',
+		class: '',
 
 		// data s-group fields
 		attached: false,
@@ -58,6 +63,7 @@ function SGroup(type) { // eslint-disable-line max-statements
 		daspPos: 1,
 		fieldType: 'F',
 		fieldName: '',
+		fieldInfo: '',
 		fieldValue: '',
 		units: '',
 		query: '',
@@ -157,6 +163,7 @@ SGroup.clone = function (sgroup, aidMap) {
 	cp.bonds = null;
 	cp.allAtoms = sgroup.allAtoms;
 	cp.brkxyz = sgroup.brkxyz;
+	cp.cState = sgroup.cState;
 	return cp;
 };
 
